@@ -12,6 +12,7 @@ Route::post('/verify-otp', [AuthenticationController::class, 'verifyOtp']);
 // ------------------ Category Routes ----------------------//
 Route::get('/categories', [\App\Http\Controllers\API\CategoryController::class, 'index']);
 Route::get('/categories/search', [\App\Http\Controllers\API\CategoryController::class, 'search']);
+Route::get('/categories/{category}/products', [\App\Http\Controllers\API\ProductController::class, 'getByCategory']);
 
 // ------------------ Protected Routes ----------------------//
 Route::middleware('auth:sanctum')->group(function () {
@@ -21,4 +22,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/get-user', [AuthenticationController::class, 'userInfo'])->name('get-user');
     Route::post('/logout', [AuthenticationController::class, 'logOut'])->name('logout');
+
+    // ------------------ Order Routes -------------------------//
+    Route::get('/orders', [\App\Http\Controllers\OrderController::class, 'index']);
+    Route::post('/orders', [\App\Http\Controllers\OrderController::class, 'store']);
 });
