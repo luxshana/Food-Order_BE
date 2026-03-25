@@ -32,4 +32,8 @@ class User extends Authenticatable
             'is_verified' => 'boolean',
         ];
     }
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }

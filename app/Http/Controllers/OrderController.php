@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -13,8 +14,30 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $userId = auth()->id() ?? 1; // Default to 1 for testing if not auth
-        $orders = Order::where('user_id', $userId)->with('items.product')->get();
+        $user = auth()->user();
+
+        if (!$user) {
+            // Support for testing/development if needed, but in production this should be authenticated
+            $userId = 1; 
+            $user = User::find($userId);
+        }
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        $orders = $user->orders()->with('items.product')->latest()->get();
+
+        return response()->json([
+            'orders' => $orders
+        ]);
+    }
+
+    public function userOrders(User $user)
+    {
+        $orders = $user->orders()->with('items.product')->latest()->get();
 
         return response()->json([
             'orders' => $orders
