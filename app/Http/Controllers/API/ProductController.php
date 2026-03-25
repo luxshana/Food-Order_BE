@@ -39,10 +39,79 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::all();
+        $products = Product::with('category')->get();
         return response()->json([
             'success' => true,
             'data' => $products
+        ]);
+    }
+
+    /**
+     * Store a newly created product in storage.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'category_id' => 'required|exists:categories,id',
+            'price' => 'required|numeric',
+            'image' => 'nullable|string',
+            'description' => 'nullable|string',
+            'status' => 'nullable|string',
+        ]);
+
+        // Filter out status if the column doesn't exist in the database yet
+        if (isset($validated['status']) && !\Illuminate\Support\Facades\Schema::hasColumn('products', 'status')) {
+            unset($validated['status']);
+        }
+
+        $product = Product::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Product created successfully.',
+            'data' => $product
+        ], 201);
+    }
+
+    /**
+     * Update the specified product in storage.
+     */
+    public function update(Request $request, Product $product)
+    {
+        $validated = $request->validate([
+            'name' => 'sometimes|required|string|max:255',
+            'category_id' => 'sometimes|required|exists:categories,id',
+            'price' => 'sometimes|required|numeric',
+            'image' => 'nullable|string',
+            'description' => 'nullable|string',
+            'status' => 'nullable|string',
+        ]);
+
+        // Filter out status if the column doesn't exist in the database yet
+        if (isset($validated['status']) && !\Illuminate\Support\Facades\Schema::hasColumn('products', 'status')) {
+            unset($validated['status']);
+        }
+
+        $product->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Product updated successfully.',
+            'data' => $product
+        ]);
+    }
+
+    /**
+     * Remove the specified product from storage.
+     */
+    public function destroy(Product $product)
+    {
+        $product->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Product deleted successfully.'
         ]);
     }
 }

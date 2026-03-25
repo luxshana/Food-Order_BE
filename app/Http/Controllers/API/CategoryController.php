@@ -56,6 +56,52 @@ class CategoryController extends Controller
     }
 
     /**
+     * Update the specified category in storage.
+     */
+    public function update(Request $request, Category $category)
+    {
+        $request->validate([
+            'name' => 'sometimes|required|string|max:255',
+            'image' => 'nullable|string'
+        ]);
+
+        try {
+            $category->update($request->all());
+            return response()->json([
+                'success' => true,
+                'data' => $category,
+                'message' => 'Category updated successfully.'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update category.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove the specified category from storage.
+     */
+    public function destroy(Category $category)
+    {
+        try {
+            $category->delete();
+            return response()->json([
+                'success' => true,
+                'message' => 'Category deleted successfully.'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete category.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Search for categories by name.
      */
     public function search(Request $request)

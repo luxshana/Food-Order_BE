@@ -14,21 +14,7 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $user = auth()->user();
-
-        if (!$user) {
-            // Support for testing/development if needed, but in production this should be authenticated
-            $userId = 1; 
-            $user = User::find($userId);
-        }
-
-        if (!$user) {
-            return response()->json([
-                'message' => 'User not found'
-            ], 404);
-        }
-
-        $orders = $user->orders()->with('items.product')->latest()->get();
+        $orders = Order::with(['items.product', 'user'])->latest()->get();
 
         return response()->json([
             'orders' => $orders
