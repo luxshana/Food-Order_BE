@@ -62,8 +62,10 @@ class OrderController extends Controller
             $order = Order::create($orderData);
 
             foreach ($request->items as $item) {
+                $product = \App\Models\Product::find($item['product_id']);
                 $order->items()->create([
                     'product_id' => $item['product_id'],
+                    'item_name' => $product ? $product->name : 'Unknown Product',
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
                 ]);
