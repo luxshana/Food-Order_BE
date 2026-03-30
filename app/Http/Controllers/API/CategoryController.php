@@ -34,13 +34,26 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $rules = [
             'name' => 'required|string|max:255',
-            'image' => 'nullable|string'
-        ]);
+        ];
+
+        if ($request->hasFile('image')) {
+            $rules['image'] = 'image|max:2048';
+        } else {
+            $rules['image'] = 'nullable|string';
+        }
+
+        $request->validate($rules);
 
         try {
-            $category = Category::create($request->all());
+            $data = $request->all();
+
+            if ($request->hasFile('image')) {
+                $data['image'] = $request->file('image')->store('categories', 'public');
+            }
+
+            $category = Category::create($data);
             return response()->json([
                 'success' => true,
                 'data' => $category,
@@ -60,13 +73,30 @@ class CategoryController extends Controller
      */
     public function update(Request $request, Category $category)
     {
-        $request->validate([
+        $rules = [
             'name' => 'sometimes|required|string|max:255',
-            'image' => 'nullable|string'
-        ]);
+        ];
+
+        if ($request->hasFile('image')) {
+            $rules['image'] = 'image|max:2048';
+        } else {
+            $rules['image'] = 'nullable|string';
+        }
+
+        $request->validate($rules);
 
         try {
-            $category->update($request->all());
+            $data = $request->all();
+
+            if ($request->hasFile('image')) {
+                // Delete old image if it exists
+                if ($category->getRawOriginal('image')) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($category->getRawOriginal('image'));
+                }
+                $data['image'] = $request->file('image')->store('categories', 'public');
+            }
+
+            $category->update($data);
             return response()->json([
                 'success' => true,
                 'data' => $category,

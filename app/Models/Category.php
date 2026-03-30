@@ -8,6 +8,14 @@ class Category extends Model
 {
     protected $guarded = [];
 
+    public function getImageAttribute($value)
+    {
+        if ($value && !filter_var($value, FILTER_VALIDATE_URL)) {
+            return asset('storage/' . $value);
+        }
+        return $value;
+    }
+
     public function products()
     {
         return $this->hasMany(Product::class);

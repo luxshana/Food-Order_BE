@@ -51,18 +51,29 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $rules = [
             'name' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
             'price' => 'required|numeric',
-            'image' => 'nullable|string',
             'description' => 'nullable|string',
             'status' => 'nullable|string',
-        ]);
+        ];
+
+        if ($request->hasFile('image')) {
+            $rules['image'] = 'image|max:2048';
+        } else {
+            $rules['image'] = 'nullable|string';
+        }
+
+        $validated = $request->validate($rules);
 
         // Filter out status if the column doesn't exist in the database yet
         if (isset($validated['status']) && !\Illuminate\Support\Facades\Schema::hasColumn('products', 'status')) {
             unset($validated['status']);
+        }
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('products', 'public');
         }
 
         $product = Product::create($validated);
@@ -79,18 +90,33 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        $validated = $request->validate([
+        $rules = [
             'name' => 'sometimes|required|string|max:255',
             'category_id' => 'sometimes|required|exists:categories,id',
             'price' => 'sometimes|required|numeric',
-            'image' => 'nullable|string',
             'description' => 'nullable|string',
             'status' => 'nullable|string',
-        ]);
+        ];
+
+        if ($request->hasFile('image')) {
+            $rules['image'] = 'image|max:2048';
+        } else {
+            $rules['image'] = 'nullable|string';
+        }
+
+        $validated = $request->validate($rules);
 
         // Filter out status if the column doesn't exist in the database yet
         if (isset($validated['status']) && !\Illuminate\Support\Facades\Schema::hasColumn('products', 'status')) {
             unset($validated['status']);
+        }
+
+        if ($request->hasFile('image')) {
+            // Delete old image if it exists
+            if ($product->getRawOriginal('image')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($product->getRawOriginal('image'));
+            }
+            $validated['image'] = $request->file('image')->store('products', 'public');
         }
 
         $product->update($validated);
