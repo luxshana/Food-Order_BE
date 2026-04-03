@@ -101,7 +101,10 @@ class AuthenticationController extends Controller
     public function userInfo()
     {
         try {
-            $users = User::latest()->paginate(10);
+            $users = User::withCount('orders')
+                ->withSum('orders', 'total_amount')
+                ->latest()
+                ->paginate(10);
 
             return response()->json([
                 'response_code'  => 200,
