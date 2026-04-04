@@ -17,7 +17,7 @@ class ProductController extends Controller
      */
     public function getByCategory($categoryId)
     {
-        $category = Category::find($categoryId, ['*']);
+        $category = Category::find($categoryId);
 
         if (!$category) {
             return response()->json([
@@ -26,7 +26,18 @@ class ProductController extends Controller
             ], 404);
         }
 
-        $products = $category->products()->get(['id', 'name', 'image', 'price', 'description']);
+        // Only return products from active categories
+        if (strtolower($category->status) !== 'active') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Category is not active.'
+            ], 404);
+        }
+
+        // Only return active products — filter out inactive ones
+        $products = $category->products()
+            ->where('status', 'Active')
+            ->get(['id', 'name', 'image', 'price', 'description']);
 
         return response()->json([
             'success' => true,
