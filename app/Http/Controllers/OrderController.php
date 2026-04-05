@@ -86,4 +86,47 @@ class OrderController extends Controller
             ], 500);
         }
     }
+
+    public function show($id)
+    {
+        try {
+            $order = Order::with(['items.product', 'user'])->findOrFail($id);
+            return response()->json([
+                'order' => $order
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Order not found', 'error' => $e->getMessage()], 404);
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'status' => 'required|string|max:50',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $order = Order::findOrFail($id);
+            
+            // Standard Eloquent update
+            $updated = $order->update([
+                'status' => $request->status
+            ]);
+
+            return response()->json([
+                'success' => $updated,
+                'message' => 'Order status updated successfully',
+                'order' => $order->fresh(['items.product', 'user'])
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to update order status',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

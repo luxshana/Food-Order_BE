@@ -25,6 +25,8 @@ Route::delete('/products/{product}', [\App\Http\Controllers\API\ProductControlle
 Route::get('/categories-with-products', [\App\Http\Controllers\API\ProductController::class, 'allCategoriesWithProducts']);
 Route::get('/get-user', [AuthenticationController::class, 'userInfo'])->name('get-user');
  Route::get('/orders', [\App\Http\Controllers\OrderController::class, 'index']);
+ Route::get('/orders/{id}', [\App\Http\Controllers\OrderController::class, 'show']);
+ Route::put('/orders/{id}', [\App\Http\Controllers\OrderController::class, 'update']);
  Route::get('/dashboard', [\App\Http\Controllers\API\DashboardController::class, 'index']);
 
 // ------------------ Protected Routes ----------------------//
