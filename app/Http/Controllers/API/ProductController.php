@@ -84,7 +84,7 @@ class ProductController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('products', 'public');
+            $validated['image'] = $request->file('image')->store('products', 'public_html');
         }
 
         $product = Product::create($validated);
@@ -125,9 +125,9 @@ class ProductController extends Controller
         if ($request->hasFile('image')) {
             // Delete old image if it exists
             if ($product->getRawOriginal('image')) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($product->getRawOriginal('image'));
+                \Illuminate\Support\Facades\Storage::disk('public_html')->delete($product->getRawOriginal('image'));
             }
-            $validated['image'] = $request->file('image')->store('products', 'public');
+            $validated['image'] = $request->file('image')->store('products', 'public_html');
         }
 
         $product->update($validated);

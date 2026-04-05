@@ -50,7 +50,7 @@ class CategoryController extends Controller
             $data = $request->all();
 
             if ($request->hasFile('image')) {
-                $data['image'] = $request->file('image')->store('categories', 'public');
+                $data['image'] = $request->file('image')->store('categories', 'public_html');
             }
 
             $category = Category::create($data);
@@ -91,9 +91,9 @@ class CategoryController extends Controller
             if ($request->hasFile('image')) {
                 // Delete old image if it exists
                 if ($category->getRawOriginal('image')) {
-                    \Illuminate\Support\Facades\Storage::disk('public')->delete($category->getRawOriginal('image'));
+                    \Illuminate\Support\Facades\Storage::disk('public_html')->delete($category->getRawOriginal('image'));
                 }
-                $data['image'] = $request->file('image')->store('categories', 'public');
+                $data['image'] = $request->file('image')->store('categories', 'public_html');
             }
 
             $category->update($data);
