@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SendOtpMail;
 
 class AuthenticationController extends Controller
 {
@@ -29,12 +31,27 @@ class AuthenticationController extends Controller
             $user->email     = $request->email;
             $user->password  = Hash::make($request->password);
             $user->Confirm_password = Hash::make($request->Confirm_password);
+            
+            // Generate OTP for registration verification
+            $otp = rand(100000, 999999);
+            $user->otp = $otp;
+            $user->otp_expires_at = now()->addMinutes(10);
+            $user->is_verified = false;
+            
             $user->save();
+
+            try {
+                Mail::to($user->email)->send(new SendOtpMail($otp, $user->name));
+                Log::info("Registration OTP email sent to {$user->email}");
+            } catch (\Exception $e) {
+                Log::error("Failed to send registration OTP email to {$user->email}: " . $e->getMessage());
+            }
 
             return response()->json([
                 'response_code' => 201,
                 'status'        => 'success',
-                'message'       => 'Successfully registered',
+                'message'       => 'Successfully registered. Please verify your email with the OTP sent.',
+                'user_id'       => $user->id,
             ], 201);
 
         } catch (\Exception $e) {
@@ -66,6 +83,14 @@ class AuthenticationController extends Controller
                 $user->otp = $otp;
                 $user->otp_expires_at = now()->addMinutes(10);
                 $user->save();
+
+                try {
+                    Mail::to($user->email)->send(new SendOtpMail($otp, $user->name));
+                    Log::info("OTP email sent to {$user->email}");
+                } catch (\Exception $e) {
+                    Log::error("Failed to send OTP email to {$user->email}: " . $e->getMessage());
+                    // We continue even if email fails in local/dev, but in production this might be a blocker
+                }
 
                 Log::info("Login OTP for {$user->email}: {$otp}");
 
